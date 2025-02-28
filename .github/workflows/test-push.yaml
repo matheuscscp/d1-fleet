@@ -1,0 +1,77 @@
+name: Test push
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        required: true
+      path:
+        required: false
+        default: '.'
+      diff-tag:
+        required: false
+      tags:
+        required: false
+      ignore-paths:
+        required: false
+      annotations:
+        required: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # for pushing
+      id-token: write # for signing
+    steps:
+    - name: Print Workflow Inputs
+      env:
+        REPOSITORY: ${{ inputs.repository }}
+        INPUT_PATH: ${{ inputs.path }}
+        TAGS: ${{ inputs.tags }}
+        DIFF_TAG: ${{ inputs.diff-tag }}
+        IGNORE_PATHS: ${{ inputs.ignore-paths }}
+        ANNOTATIONS: ${{ inputs.annotations }}
+        ACTION_REPOSITORY: ghcr.io/${{ github.repository }}/${{ inputs.repository }}
+      run: |
+        echo "repository: $REPOSITORY"
+        echo "path: $INPUT_PATH"
+        echo "tags: $TAGS"
+        echo "diff-tag: $DIFF_TAG"
+        echo "ignore-paths: $IGNORE_PATHS"
+        echo "annotations: $ANNOTATIONS"
+        echo ""
+        echo "Push action repository: $ACTION_REPOSITORY"
+
+    - uses: actions/checkout@v4
+    - uses: controlplaneio-fluxcd/distribution/actions/setup@main
+    - uses: sigstore/cosign-installer@v3
+    - uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - uses: matheuscscp/d1-fleet/actions/push@main
+      id: push
+      with:
+        repository: ghcr.io/${{ github.repository }}/${{ inputs.repository }}
+        path: ${{ inputs.path }}
+        tags: ${{ inputs.tags }}
+        diff-tag: ${{ inputs.diff-tag }}
+        ignore-paths: ${{ inputs.ignore-paths }}
+        annotations: ${{ inputs.annotations }}
+    - if: steps.push.outputs.pushed == 'true'
+      run: cosign sign --yes $DIGEST_URL
+      env:
+        DIGEST_URL: ${{ steps.push.outputs.digest-url }}
+
+    - name: Print Push Action Outputs
+      env:
+        PUSHED: ${{ steps.push.outputs.pushed }}
+        DIGEST: ${{ steps.push.outputs.digest }}
+        DIGEST_URL: ${{ steps.push.outputs.digest-url }}
+      run: |
+        echo "Pushed: $PUSHED"
+        echo "Digest: $DIGEST"
+        echo "Digest URL: $DIGEST_URL"
