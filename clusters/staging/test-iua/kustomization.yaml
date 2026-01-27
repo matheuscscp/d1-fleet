@@ -4,4 +4,4 @@ resources: []
 images:
   - name: registry.gitlab/my/image
     newTag: latest
-    digest: placeholder # {"$imagepolicy": "flux-system:test-iua:digest"}
+    digest: sha256:26b912583bd671f4b12789763482aa4a169bfb58b1b68c17cfe8d6d17b7c1423 # {"$imagepolicy": "flux-system:test-iua:digest"}
