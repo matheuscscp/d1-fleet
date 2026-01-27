@@ -10,7 +10,7 @@ spec:
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
 metadata:
-  name: my-image-policy
+  name: test-iua
   namespace: flux-system
 spec:
   imageRepositoryRef:
