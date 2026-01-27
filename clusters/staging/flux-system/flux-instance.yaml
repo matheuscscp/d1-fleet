@@ -24,7 +24,7 @@ spec:
     domain: "cluster.local"
   sync:
     kind: GitRepository
-    url: https://github.com/controlplaneio-fluxcd/d1-fleet.git
+    url: https://github.com/matheuscscp/d1-fleet.git
     ref: "refs/heads/main"
     path: "clusters/staging"
     pullSecret: flux-system
